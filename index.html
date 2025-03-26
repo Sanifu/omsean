@@ -1,22 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fullscreen Video with Sound</title>
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-    }
-    video {
-      width: 100vw;
-      height: 100vh;
-      object-fit: cover;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Omsaun Video Player</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            background-color: black; /* Background for letterboxing */
+        }
+
+        #myVideo {
+            position: fixed;
+            /* Center the video */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%); /* Move origin to center */
+
+            /* Ensure video fits within bounds */
+            min-width: 100%; /* Try to fill width */
+            min-height: 100%; /* Try to fill height */
+
+            /* --- KEY CHANGES --- */
+            width: 100vw; /* Set width relative to viewport width */
+            height: 100vh; /* Set height relative to viewport height */
+            object-fit: contain; /* Fit entire video within bounds, add black bars if needed */
+            /* --- END KEY CHANGES --- */
+        }
+    </style>
 </head>
 <body>
-  <video src="video.mp4" autoplay loop></video>
+
+    <!-- Added 'controls' for debugging sound -->
+    <video autoplay muted loop playsinline controls id="myVideo">
+        <source src="24115864.mp4" type="video/mp4">
+        Your browser does not support the video tag. Check console for errors.
+    </video>
+
+    <script>
+        const video = document.getElementById('myVideo');
+
+        // Attempt to unmute after a user interaction (click/tap)
+        document.body.addEventListener('click', function handleInteraction() {
+            // Try unmuting
+            if (video.muted) {
+                console.log("Attempting to unmute video...");
+                video.muted = false;
+            }
+
+            // Ensure playback if paused after interaction
+            if (video.paused) {
+                console.log("Video was paused, attempting to play...");
+                video.play().then(() => {
+                    console.log("Playback started successfully.");
+                    // If play succeeds, try unmuting again, as some browsers require play() first
+                    if(video.muted) video.muted = false;
+                }).catch(error => {
+                    console.error("Error attempting to play video after interaction:", error);
+                    // Log details about the video state
+                    console.log("Video properties:", {
+                        paused: video.paused,
+                        muted: video.muted,
+                        readyState: video.readyState,
+                        error: video.error
+                    });
+                });
+            }
+
+            // Optional: Remove listener after first successful interaction
+            // document.body.removeEventListener('click', handleInteraction);
+
+        }, { once: false }); // Run potentially more than once if initial play fails
+
+        // Log initial state
+        console.log("Video initial state:", {
+            autoplay: video.autoplay,
+            muted: video.muted,
+            loop: video.loop,
+            controls: video.controls
+        });
+
+        // Listen for errors on the video element itself
+        video.addEventListener('error', (e) => {
+            console.error("Video element error:", video.error);
+        });
+    </script>
+
 </body>
 </html>
